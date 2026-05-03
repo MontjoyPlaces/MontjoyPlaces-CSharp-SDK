@@ -66,6 +66,41 @@ try
     });
     Console.WriteLine("group custom places: " + string.Join(", ", listedPlaces.Rows.Select(row => row.Name)));
 
+    var exportedPlaces = await client.ExportCustomPlacesAsync(new ExportCustomPlacesRequest
+    {
+        GroupId = groupId,
+        Limit = 10,
+        IncludeHidden = true
+    });
+    Console.WriteLine($"exported custom places: {exportedPlaces.Count}");
+
+    var importedPlaces = await client.ImportCustomPlacesAsync(new CustomPlacesImportRequest
+    {
+        Mode = "upsert",
+        Rows = exportedPlaces.Rows.Select(row => new CustomPlaceImportRow(
+            Name: row.Name,
+            Latitude: row.Latitude,
+            Longitude: row.Longitude)
+        {
+            CustomPlaceIdSnakeCase = row.CustomPlaceId,
+            GroupIdSnakeCase = row.GroupId,
+            FsqPlaceIdSnakeCase = row.FsqPlaceId,
+            OwnerUserIdSnakeCase = row.OwnerUserId,
+            Source = row.Source,
+            Address = row.Address,
+            Locality = row.Locality,
+            Region = row.Region,
+            Postcode = row.Postcode,
+            Country = row.Country,
+            Website = row.Website,
+            Tel = row.Tel,
+            Email = row.Email,
+            Tags = row.Tags,
+            Meta = row.Meta
+        }).ToList()
+    });
+    Console.WriteLine($"imported custom places: {importedPlaces.Imported}");
+
     var search = await client.SearchPlacesAsync(new SearchPlacesRequest("coffee near Boston MA") { Limit = 3 });
     var firstPlaceId = search.Rows.ValueKind == JsonValueKind.Array
         ? search.Rows.EnumerateArray()

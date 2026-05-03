@@ -13,7 +13,7 @@ var plans = await client.ListBillingPlansAsync();
 Console.WriteLine("billing plans: " + string.Join(", ", plans.Plans.Select(plan => plan.Code)));
 
 var whoAmI = await client.WhoAmIAsync();
-Console.WriteLine($"whoami: tenant={whoAmI.TenantId}, key={whoAmI.KeyName}");
+Console.WriteLine($"whoami: tenant={whoAmI.TenantId}, key={whoAmI.KeyName}, readOnly={whoAmI.ReadOnly}");
 
 var groups = await client.ListGroupsAsync(new ListGroupsRequest(Limit: 5));
 Console.WriteLine("groups: " + string.Join(", ", groups.Rows.Select(group => group.Name)));

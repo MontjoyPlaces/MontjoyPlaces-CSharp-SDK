@@ -28,7 +28,8 @@ public sealed record WhoAmIResponse(
     [property: JsonPropertyName("tenantId")] string TenantId,
     [property: JsonPropertyName("appId")] string AppId,
     [property: JsonPropertyName("keyName")] string KeyName,
-    [property: JsonPropertyName("prefix")] string Prefix);
+    [property: JsonPropertyName("prefix")] string Prefix,
+    [property: JsonPropertyName("readOnly")] bool ReadOnly);
 
 public sealed record Group(
     [property: JsonPropertyName("group_id")] string GroupId,
@@ -56,7 +57,7 @@ public sealed record DeleteResponse(
     [property: JsonPropertyName("ok")] bool Ok,
     [property: JsonPropertyName("deleted")] bool? Deleted);
 
-public sealed record CustomPlace(
+public record CustomPlace(
     [property: JsonPropertyName("custom_place_id")] string CustomPlaceId,
     [property: JsonPropertyName("tenant_id")] string TenantId,
     [property: JsonPropertyName("app_id")] string? AppId,
@@ -81,14 +82,55 @@ public sealed record CustomPlace(
     [property: JsonPropertyName("updated_at")] DateTimeOffset UpdatedAt,
     [property: JsonPropertyName("dist_m")] double? DistanceMeters);
 
+public sealed record ImportedCustomPlace(
+    string CustomPlaceId,
+    string TenantId,
+    string? AppId,
+    string? GroupId,
+    string? OwnerUserId,
+    string Source,
+    string? FsqPlaceId,
+    string Name,
+    double Latitude,
+    double Longitude,
+    string? Address,
+    string? Locality,
+    string? Region,
+    string? Postcode,
+    string? Country,
+    string? Website,
+    string? Tel,
+    string? Email,
+    JsonElement? Tags,
+    JsonElement? Meta,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset UpdatedAt,
+    double? DistanceMeters,
+    [property: JsonPropertyName("_import_action")] string? ImportAction)
+    : CustomPlace(CustomPlaceId, TenantId, AppId, GroupId, OwnerUserId, Source, FsqPlaceId, Name, Latitude, Longitude,
+        Address, Locality, Region, Postcode, Country, Website, Tel, Email, Tags, Meta, CreatedAt, UpdatedAt, DistanceMeters);
+
 public sealed record CustomPlacesListResponse(
     [property: JsonPropertyName("ok")] bool Ok,
+    [property: JsonPropertyName("rows")] IReadOnlyList<CustomPlace> Rows,
+    [property: JsonPropertyName("nextCursor")] string? NextCursor);
+
+public sealed record CustomPlacesExportResponse(
+    [property: JsonPropertyName("ok")] bool Ok,
+    [property: JsonPropertyName("count")] int Count,
     [property: JsonPropertyName("rows")] IReadOnlyList<CustomPlace> Rows,
     [property: JsonPropertyName("nextCursor")] string? NextCursor);
 
 public sealed record CustomPlaceSingleResponse(
     [property: JsonPropertyName("ok")] bool Ok,
     [property: JsonPropertyName("row")] CustomPlace Row);
+
+public sealed record CustomPlacesImportResponse(
+    [property: JsonPropertyName("ok")] bool Ok,
+    [property: JsonPropertyName("imported")] int Imported,
+    [property: JsonPropertyName("created")] int Created,
+    [property: JsonPropertyName("updated")] int Updated,
+    [property: JsonPropertyName("rows")] IReadOnlyList<ImportedCustomPlace> Rows);
 
 public sealed record CustomPlaceCreateRequest(
     [property: JsonPropertyName("name")] string Name,
@@ -136,6 +178,84 @@ public sealed record CustomPlaceCreateRequest(
 
     [JsonPropertyName("meta")]
     public object? Meta { get; init; }
+}
+
+public sealed record CustomPlaceImportRow(
+    [property: JsonPropertyName("name")] string Name,
+    [property: JsonPropertyName("latitude")] double Latitude,
+    [property: JsonPropertyName("longitude")] double Longitude)
+{
+    [JsonPropertyName("customPlaceId")]
+    public string? CustomPlaceId { get; init; }
+
+    [JsonPropertyName("custom_place_id")]
+    public string? CustomPlaceIdSnakeCase { get; init; }
+
+    [JsonPropertyName("groupId")]
+    public string? GroupId { get; init; }
+
+    [JsonPropertyName("group_id")]
+    public string? GroupIdSnakeCase { get; init; }
+
+    [JsonPropertyName("source")]
+    public string? Source { get; init; }
+
+    [JsonPropertyName("ownerUserId")]
+    public string? OwnerUserId { get; init; }
+
+    [JsonPropertyName("owner_user_id")]
+    public string? OwnerUserIdSnakeCase { get; init; }
+
+    [JsonPropertyName("fsqPlaceId")]
+    public string? FsqPlaceId { get; init; }
+
+    [JsonPropertyName("fsq_place_id")]
+    public string? FsqPlaceIdSnakeCase { get; init; }
+
+    [JsonPropertyName("address")]
+    public string? Address { get; init; }
+
+    [JsonPropertyName("locality")]
+    public string? Locality { get; init; }
+
+    [JsonPropertyName("region")]
+    public string? Region { get; init; }
+
+    [JsonPropertyName("postcode")]
+    public string? Postcode { get; init; }
+
+    [JsonPropertyName("country")]
+    public string? Country { get; init; }
+
+    [JsonPropertyName("website")]
+    public string? Website { get; init; }
+
+    [JsonPropertyName("tel")]
+    public string? Tel { get; init; }
+
+    [JsonPropertyName("email")]
+    public string? Email { get; init; }
+
+    [JsonPropertyName("tags")]
+    public object? Tags { get; init; }
+
+    [JsonPropertyName("meta")]
+    public object? Meta { get; init; }
+}
+
+public sealed record CustomPlacesImportRequest
+{
+    [JsonPropertyName("mode")]
+    public string? Mode { get; init; }
+
+    [JsonPropertyName("groupId")]
+    public string? GroupId { get; init; }
+
+    [JsonPropertyName("rows")]
+    public IReadOnlyList<CustomPlaceImportRow>? Rows { get; init; }
+
+    [JsonPropertyName("places")]
+    public IReadOnlyList<CustomPlaceImportRow>? Places { get; init; }
 }
 
 public sealed record CustomPlaceUpdateRequest
@@ -353,6 +473,21 @@ public sealed record OverrideResponse(
 public sealed record ListGroupsRequest([property: JsonPropertyName("limit")] int? Limit = null);
 
 public sealed record ListCustomPlacesRequest
+{
+    [JsonPropertyName("groupId")]
+    public string? GroupId { get; init; }
+
+    [JsonPropertyName("limit")]
+    public int? Limit { get; init; }
+
+    [JsonPropertyName("cursor")]
+    public string? Cursor { get; init; }
+
+    [JsonPropertyName("includeHidden")]
+    public bool? IncludeHidden { get; init; }
+}
+
+public sealed record ExportCustomPlacesRequest
 {
     [JsonPropertyName("groupId")]
     public string? GroupId { get; init; }

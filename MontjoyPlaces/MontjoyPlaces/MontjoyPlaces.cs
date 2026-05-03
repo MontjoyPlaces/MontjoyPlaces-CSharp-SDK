@@ -52,6 +52,12 @@ public sealed class MontjoyPlaces : IDisposable
     public Task<CustomPlacesListResponse> ListCustomPlacesAsync(ListCustomPlacesRequest? request = null, CancellationToken cancellationToken = default) =>
         SendAsync<CustomPlacesListResponse>(HttpMethod.Get, "v1/custom-places", query: ToQuery(request), cancellationToken: cancellationToken);
 
+    public Task<CustomPlacesExportResponse> ExportCustomPlacesAsync(ExportCustomPlacesRequest? request = null, CancellationToken cancellationToken = default) =>
+        SendAsync<CustomPlacesExportResponse>(HttpMethod.Get, "v1/custom-places/export", query: ToQuery(request), cancellationToken: cancellationToken);
+
+    public Task<CustomPlacesImportResponse> ImportCustomPlacesAsync(CustomPlacesImportRequest request, CancellationToken cancellationToken = default) =>
+        SendAsync<CustomPlacesImportResponse>(HttpMethod.Post, "v1/custom-places/import", body: request, cancellationToken: cancellationToken);
+
     public Task<CustomPlaceSingleResponse> CreateCustomPlaceAsync(CustomPlaceCreateRequest request, CancellationToken cancellationToken = default) =>
         SendAsync<CustomPlaceSingleResponse>(HttpMethod.Post, "v1/custom-places", body: request, cancellationToken: cancellationToken);
 

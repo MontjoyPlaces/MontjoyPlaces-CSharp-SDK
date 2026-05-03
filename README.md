@@ -10,7 +10,7 @@ The SDK currently supports:
 
 - API key validation with `WhoAmIAsync`
 - Group management
-- Custom place create, read, update, hide, list, and delete operations
+- Custom place create, read, update, hide, list, export, import, and delete operations
 - Place override operations
 - US city and ZIP lookup endpoints
 - Category search and lookup endpoints
@@ -66,7 +66,7 @@ var apiKey = Environment.GetEnvironmentVariable("MONTJOY_PLACES_API_KEY")
 using var client = new MontjoyPlaces(apiKey);
 
 var whoAmI = await client.WhoAmIAsync();
-Console.WriteLine($"tenant={whoAmI.TenantId}, key={whoAmI.KeyName}");
+Console.WriteLine($"tenant={whoAmI.TenantId}, key={whoAmI.KeyName}, readOnly={whoAmI.ReadOnly}");
 
 var groups = await client.ListGroupsAsync(new ListGroupsRequest(Limit: 5));
 Console.WriteLine($"group count returned: {groups.Rows.Count}");
@@ -120,6 +120,26 @@ var updated = await client.UpdateCustomPlaceAsync(place.Row.CustomPlaceId, new C
 await client.HideCustomPlaceAsync(place.Row.CustomPlaceId, new CustomPlaceHideRequest(true));
 await client.HideCustomPlaceAsync(place.Row.CustomPlaceId, new CustomPlaceHideRequest(false));
 await client.DeleteCustomPlaceAsync(place.Row.CustomPlaceId);
+```
+
+### Custom Place Export and Import
+
+```csharp
+var exported = await client.ExportCustomPlacesAsync(new ExportCustomPlacesRequest
+{
+    GroupId = "group_123",
+    IncludeHidden = true
+});
+
+var imported = await client.ImportCustomPlacesAsync(new CustomPlacesImportRequest
+{
+    Mode = "upsert",
+    Rows = exported.Rows.Select(row => new CustomPlaceImportRow(row.Name, row.Latitude, row.Longitude)
+    {
+        CustomPlaceIdSnakeCase = row.CustomPlaceId,
+        GroupIdSnakeCase = row.GroupId
+    }).ToList()
+});
 ```
 
 ### Place Search
@@ -188,7 +208,7 @@ catch (MontjoyPlacesException ex)
 Sample programs are included in [`samples/`](./samples):
 
 - `BasicSample.cs` shows authentication, group listing, and search
-- `IntegrationSample.cs` exercises create, update, hide, list, and cleanup flows for groups and custom places
+- `IntegrationSample.cs` exercises create, update, hide, list, export, import, and cleanup flows for groups and custom places
 
 Run a sample with an API key set in the environment:
 
